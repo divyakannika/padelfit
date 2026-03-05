@@ -1,4 +1,4 @@
-import { PlayStyle } from '../user/PlayStyle'
+import { PlayStyle } from '../user/playStyle'
 
 export interface Racket {
   id: string
@@ -10,8 +10,6 @@ export interface Racket {
   price: number
   priceRange: 'low' | 'mid' | 'premium'
   weight: number
-  sweetSpot: string
-  feel: string
   description: string
   bestFor: string
   limitations: string

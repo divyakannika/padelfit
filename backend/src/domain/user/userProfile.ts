@@ -1,9 +1,9 @@
-import { PlayStyle } from './PlayStyle'
+import { PlayStyle } from './playStyle'
 
 export interface UserProfile {
   skillLevel: 'beginner' | 'intermediate' | 'advanced'
   playStyle: PlayStyle
   height: number
-  strength: 'low' | 'medium' | 'high'
-  budget: 'low' | 'mid' | 'premium'
+  weight: number
+  budgetRange: 'low' | 'mid' | 'premium'
 }

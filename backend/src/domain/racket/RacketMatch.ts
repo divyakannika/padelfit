@@ -1,4 +1,4 @@
-import { Racket } from './Racket'
+import { Racket } from './racket'
 
 export interface RacketMatch {
   racket: Racket
