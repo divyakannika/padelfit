@@ -27,15 +27,19 @@ export const sendMessage = (repo: ConversationStore, llm: LLMAdapter) => ({
 
     // if LLM has collected all profile fields it returns JSON
     try {
-      const parsed = JSON.parse(response)
-      if (parsed.complete === true) {
-        conversation.profile = parsed.profile
-        conversation.state = ConversationState.MATCHING
-        repo.save(conversation)
-        return {
-          message: 'Perfect, I have everything I need. Finding your top 3 rackets now...',
-          state: conversation.state,
-          readyToMatch: true
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.complete === true) {
+          conversation.profile = parsed.profile;
+          conversation.state = ConversationState.MATCHING;
+          repo.save(conversation);
+          return {
+            message:
+              "Perfect, I have everything I need. Finding your top 3 rackets now...",
+            state: conversation.state,
+            readyToMatch: true,
+          };
         }
       }
     } catch {

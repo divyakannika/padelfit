@@ -18,7 +18,7 @@ export const startConversation = (repo: ConversationStore, llm: LLMAdapter) => (
     const opening = await llm.chat(
       CONVERSATION_PROMPT.system,
       [],
-      'Begin'
+      'Hello!'
     )
 
     conversation.messages.push({

@@ -25,21 +25,23 @@ export const getRecommendations = (repo: ConversationStore, llm: LLMAdapter, rac
       )
     )
 
-    const parsed = JSON.parse(response)
+    // console.log('LLM matching response:', response)
+
+    const trimmed = response.trim()
+    const cleaned = trimmed.endsWith('}') ? trimmed : trimmed + '}'
+    const parsed = JSON.parse(cleaned.replace(/```json\n?|\n?```/g, '').trim())
     
     // validate LLM response shape before mapping
     if (!parsed.matches || !Array.isArray(parsed.matches)) {
       throw new Error('Invalid response from LLM')
     }
-    const matches: RacketMatch[] = parsed.matches.map((m: {
-      racketId: string
-      score: number
-      reason: string
-    }) => ({
-      racket: rackets.find(r => r.id === m.racketId)!,
-      score: m.score,
-      reason: m.reason
-    }))
+    const matches: RacketMatch[] = parsed.matches
+      .map((m: { racketId: string; score: number; reason: string }) => {
+        const racket = rackets.find((r) => r.id === m.racketId);
+        if (!racket) return null; // skip invalid racket ids
+        return { racket, score: m.score, reason: m.reason };
+      })
+      .filter(Boolean); 
 
     conversation.matches = matches
     conversation.state = ConversationState.DONE
