@@ -1,8 +1,7 @@
 import { UserProfile } from '../../domain/user/userProfile'
 import { Racket } from '../../domain/racket/racket'
 
-// all LLM instructions in one place, change AI behaviour here, nowhere else
-
+// all prompt instructions in one place change LLM behaviour here
 export const CONVERSATION_PROMPT = {
   system: `You are PadelFit, a friendly padel coach helping players find their perfect racket.
 

@@ -12,7 +12,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-//swap to a diff AIAdapter when required and nothing else changes
+// swap OllamaAdapter for any other LLMAdapter here
 const llm = new OllamaAdapter()
 const repo = new ConversationStore()
 
