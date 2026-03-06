@@ -1,11 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import ChatWindow from "./components/ChatWindow.vue";
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="app">
+    <header>
+      <h1>PadelFit</h1>
+      <p>Find your perfect racket.</p>
+    </header>
+    <ChatWindow />
+  </div>
 </template>
-
-<style scoped></style>

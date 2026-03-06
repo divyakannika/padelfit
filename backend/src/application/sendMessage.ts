@@ -24,6 +24,7 @@ export const sendMessage = (repo: ConversationStore, llm: LLMAdapter) => ({
       conversation.messages.slice(0, -1), // exclude last message, passed separately as userMessage
       userMessage
     )
+    // console.log('[chat]', conversation.state, '->', response.slice(0, 80))
 
     // if LLM has collected all profile fields it returns JSON
     try {
