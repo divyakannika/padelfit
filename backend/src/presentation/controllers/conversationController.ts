@@ -37,11 +37,11 @@ export const conversationController = (
 
   async recommendations(req: Request, res: Response): Promise<void> {
     try {
-      const id = req.params.id as string;
-      const matches = await getRecommendations(repo, llm, rackets).execute(id);
-      res.json({ matches });
+      const id = req.params.id as string
+      const matches = await getRecommendations(repo, llm, rackets).execute(id)
+      res.json({ matches })
     } catch (err) {
-      res.status(400).json({ error: (err as Error).message });
+      res.status(400).json({ error: (err as Error).message })
     }
   }
 })

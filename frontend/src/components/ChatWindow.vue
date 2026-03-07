@@ -1,62 +1,75 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from "vue";
-import { api } from "../api";
-import MessageBubble from "./MessageBubble.vue";
-import RacketCard from "./RacketCard.vue";
-import type { Message, Match } from "../types";
+import { ref, onMounted, nextTick } from "vue"
+import { api } from "../api"
+import MessageBubble from "./MessageBubble.vue"
+import RacketCard from "./RacketCard.vue"
+import type { Message, Match } from "../types"
 
-const messages = ref<Message[]>([]);
-const matches = ref<Match[]>([]);
-const input = ref("");
-const loading = ref(false);
-const conversationId = ref("");
-const done = ref(false);
-const chatEnd = ref<HTMLElement | null>(null);
-const inputRef = ref<HTMLInputElement | null>(null);
+const messages = ref<Message[]>([])
+const matches = ref<Match[]>([])
+const input = ref("")
+const loading = ref(false)
+const conversationId = ref("")
+const done = ref(false)
+const chatEnd = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
+const error = ref('')
 
 // nextTick lets Vue finish rendering before we scroll, otherwise we land one message short
 const scrollToBottom = async () => {
-  await nextTick();
-  chatEnd.value?.scrollIntoView({ behavior: "smooth" });
-};
+  await nextTick()
+  chatEnd.value?.scrollIntoView({ behavior: "smooth" })
+}
+const cleanMessage = (msg: string) => msg.replace(/^\{|\}$/g, '').trim()
 
 const addMessage = (role: "user" | "assistant", content: string) => {
-  messages.value.push({ role, content });
-  scrollToBottom();
-};
+  messages.value.push({ role, content: cleanMessage(content) })
+  scrollToBottom()
+}
 
 onMounted(async () => {
-  loading.value = true;
-  const result = await api.startConversation();
-  conversationId.value = result.conversationId;
-  addMessage("assistant", result.message);
-  loading.value = false;
-  inputRef.value?.focus();
-});
+  loading.value = true
+  try {
+    const result = await api.startConversation()
+    conversationId.value = result.conversationId
+    addMessage('assistant', result.message)
+  } catch {
+    error.value = 'Could not connect to server. Is the backend running?'
+  } finally {
+    loading.value = false
+    scrollToBottom()
+    inputRef.value?.focus()
+  }
+})
 
 const send = async () => {
-  if (!input.value.trim() || loading.value || done.value) return;
+  if (!input.value.trim() || loading.value || done.value) return
 
-  const userMessage = input.value.trim();
-  input.value = "";
-  addMessage("user", userMessage);
-  loading.value = true;
+  const userMessage = input.value.trim()
+  input.value = ''
+  addMessage('user', userMessage)
+  loading.value = true
+  error.value = ''
 
-  const result = await api.sendMessage(conversationId.value, userMessage);
-  addMessage("assistant", result.message);
+  try {
+    const result = await api.sendMessage(conversationId.value, userMessage)
+    addMessage('assistant', result.message)
 
-  if (result.readyToMatch) {
-    const { matches: racketMatches } = await api.getRecommendations(
-      conversationId.value,
-    );
-    matches.value = racketMatches;
-    done.value = true;
+    if (result.readyToMatch) {
+      const { matches: racketMatches } = await api.getRecommendations(conversationId.value)
+      matches.value = racketMatches
+      done.value = true
+    }
+  } catch {
+    error.value = 'Something went wrong. Try again.'
+    // put message back so user doesn't lose it
+    input.value = userMessage
+  } finally { 
+    loading.value = false
+    scrollToBottom()
+    inputRef.value?.focus()
   }
-
-  loading.value = false;
-  scrollToBottom();
-  inputRef.value?.focus();
-};
+}
 </script>
 
 <template>
@@ -72,15 +85,23 @@ const send = async () => {
       <div ref="chatEnd" />
     </div>
 
-    <div v-if="done && matches.length" class="matches">
-      <h2>Your recommendations</h2>
-      <RacketCard
-        v-for="match in matches"
-        :key="match.racket.id"
-        :racket="match.racket"
-        :score="match.score"
-        :reason="match.reason"
-      />
+    <div v-if="error" class="error">{{ error }}</div>
+    
+    <div v-if="done" class="matches">
+    <h2>Your recommendations</h2>
+    <p v-if="matches.length === 0" class="budget-notice">
+      We couldn't find any rackets in your budget. Try increasing your budget range.
+    </p>
+    <p v-if="matches.length < 3" class="budget-notice">
+      We found {{ matches.length }} racket{{ matches.length === 1 ? '' : 's' }} in your budget. Here are the closest matches.
+    </p>
+    <RacketCard
+      v-for="match in matches"
+      :key="match.racket.id"
+      :racket="match.racket"
+      :score="match.score"
+      :reason="match.reason"
+    />
     </div>
 
     <div v-if="!done" class="input-row">

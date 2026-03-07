@@ -19,29 +19,25 @@ export const getRecommendations = (repo: ConversationStore, llm: LLMAdapter, rac
     const response = await llm.chat(
       MATCHING_PROMPT.system,
       [],
-      MATCHING_PROMPT.user(
-        conversation.profile as UserProfile,
-        rackets
-      )
+      MATCHING_PROMPT.user(conversation.profile as UserProfile, rackets)
     )
-
     // console.log('LLM matching response:', response)
 
-    const trimmed = response.trim()
-    const cleaned = trimmed.endsWith('}') ? trimmed : trimmed + '}'
-    const parsed = JSON.parse(cleaned.replace(/```json\n?|\n?```/g, '').trim())
-    
-    // validate LLM response shape before mapping
+    // const trimmed = response.trim()
+    // const cleaned = trimmed.endsWith('}') ? trimmed : trimmed + '}'
+    // const parsed = JSON.parse(cleaned.replace(/```json\n?|\n?```/g, '').trim())
+    const parsed = JSON.parse(response.replace(/```json\n?|\n?```/g, '').trim())
+
     if (!parsed.matches || !Array.isArray(parsed.matches)) {
       throw new Error('Invalid response from LLM')
     }
     const matches: RacketMatch[] = parsed.matches
       .map((m: { racketId: string; score: number; reason: string }) => {
-        const racket = rackets.find((r) => r.id === m.racketId);
-        if (!racket) return null; // skip invalid racket ids
-        return { racket, score: m.score, reason: m.reason };
+        const racket = rackets.find((r) => r.id === m.racketId)
+        if (!racket) return null 
+        return { racket, score: m.score, reason: m.reason }
       })
-      .filter(Boolean); 
+      .filter(Boolean)
 
     conversation.matches = matches
     conversation.state = ConversationState.DONE

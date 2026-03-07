@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Match } from "../types";
+import type { Match } from "../types"
 
 defineProps<{
-  racket: Match["racket"];
-  score: number;
-  reason: string;
-}>();
+  racket: Match["racket"]
+  score: number
+  reason: string
+}>()
 </script>
 
 <template>

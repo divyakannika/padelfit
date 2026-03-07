@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChatWindow from "./components/ChatWindow.vue";
+import ChatWindow from "./components/ChatWindow.vue"
 </script>
 
 <template>

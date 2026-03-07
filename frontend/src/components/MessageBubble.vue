@@ -1,8 +1,8 @@
 <script setup lang="ts">
 defineProps<{
-  role: "user" | "assistant";
-  content: string;
-}>();
+  role: "user" | "assistant"
+  content: string
+}>()
 </script>
 
 <template>

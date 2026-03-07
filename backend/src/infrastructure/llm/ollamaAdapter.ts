@@ -7,7 +7,7 @@ export class OllamaAdapter implements LLMAdapter {
 
   constructor() {
     this.baseUrl = process.env.OLLAMA_URL ?? 'http://localhost:11434'
-    this.model = process.env.OLLAMA_MODEL ?? 'llama3'
+    this.model = process.env.OLLAMA_MODEL ?? 'llama3.2'
   }
 
   async chat(

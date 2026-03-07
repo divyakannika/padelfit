@@ -5,13 +5,20 @@ import { ConversationState } from '../domain/conversation/conversationState'
 
 export const sendMessage = (repo: ConversationStore, llm: LLMAdapter) => ({
   async execute(conversationId: string, userMessage: string): Promise<{
-    message: string; state: ConversationState; readyToMatch: boolean }> { 
-      const conversation = repo.findById(conversationId)
+    message: string; state: ConversationState; readyToMatch: boolean
+  }> {
+    const conversation = repo.findById(conversationId)
 
-      if (!conversation) throw new Error('Conversation not found')
-      if (conversation.state === ConversationState.DONE) {
-        throw new Error('Conversation already complete')
+    if (!conversation) throw new Error('Conversation not found')
+    if (conversation.state === ConversationState.DONE) {
+      throw new Error('Conversation already complete')
     }
+
+    const response = await llm.chat(
+      CONVERSATION_PROMPT.system,
+      conversation.messages,
+      userMessage
+    )
 
     conversation.messages.push({
       role: 'user',
@@ -19,28 +26,21 @@ export const sendMessage = (repo: ConversationStore, llm: LLMAdapter) => ({
       timestamp: new Date()
     })
 
-    const response = await llm.chat(
-      CONVERSATION_PROMPT.system,
-      conversation.messages.slice(0, -1), // exclude last message, passed separately as userMessage
-      userMessage
-    )
-    // console.log('[chat]', conversation.state, '->', response.slice(0, 80))
-
     // if LLM has collected all profile fields it returns JSON
     try {
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      const jsonMatch = response.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0])
         if (parsed.complete === true) {
-          conversation.profile = parsed.profile;
-          conversation.state = ConversationState.MATCHING;
-          repo.save(conversation);
+          conversation.profile = parsed.profile
+          conversation.state = ConversationState.MATCHING
+          repo.save(conversation)
           return {
             message:
               "Perfect, I have everything I need. Finding your top 3 rackets now...",
             state: conversation.state,
             readyToMatch: true,
-          };
+          }
         }
       }
     } catch {
